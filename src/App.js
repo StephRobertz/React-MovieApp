@@ -52,7 +52,7 @@ const average = (arr) =>
 
 const KEY = "46f65c45";
   export default function App() {
-    const [query, setQuery] = useState("inception");
+    const [query, setQuery] = useState("");
     const [movies, setMovies] = useState([]);
     const [watched, setWatched] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -94,6 +94,8 @@ function handleDeleteWatched(id) {
   movie.imdbID !== id ))
 }
 
+
+
     useEffect(function () {
       //fetch cleaner
       const controller = new AbortController()
@@ -122,7 +124,7 @@ function handleDeleteWatched(id) {
      //console.log(data.Search)
 
       } catch (err) {
-        console.error(err.message)
+        console.log(err.message)
         setError(err.message)
 
         //to ignore the error, that shows up beacuse the fetch request is cancelled.
@@ -138,15 +140,17 @@ function handleDeleteWatched(id) {
 
     if(query.length < 3) {
       setMovies([])
-      setError('')
+      setError("")
       return;
     }
+
+    handleCloseMovie();
     fetchMovies();
 
     //controller abort the current fetch request
     return function () {
-      controller.abort()
-    }
+      controller.abort();
+    };
     },
     [query]
   );
@@ -345,6 +349,23 @@ function handleAdd() {
   onCloseMovie()
 }
 
+
+//keypress function
+useEffect(
+  function() {
+  function callback (e) {
+  if (e.code === "Escape") {
+    onCloseMovie()
+  }
+}
+document.addEventListener("keydown", callback)
+
+  //cleanup
+  return function() {
+    document.removeEventListener('keydown', callback)
+  }
+}, [onCloseMovie])
+
 useEffect(function getMovieDetails() {
   async function getMovieDetails() {
     setIsLoading(true)
@@ -359,13 +380,15 @@ useEffect(function getMovieDetails() {
 }, [selectedId])
 
 //changes the tab title
-useEffect(function() {
+useEffect(
+  function() {
   if (!title) return;
   document.title =`Movie | ${title}`
 
   //cleanup effect
   return function () {
     document.title = "usePopcorn"
+    //console.log(`clean up effect for movie ${title}`)
   }
 }, [title])
 
